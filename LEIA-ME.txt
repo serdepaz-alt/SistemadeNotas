@@ -1,0 +1,70 @@
+HISTÓRICO ESCOLAR — Busca de aluno e impressão do diploma / histórico
+=====================================================================
+
+ARQUIVOS (mantenha todos juntos na mesma pasta, com o CSV da base)
+  buscar_aluno_gui.py          programa (interface)
+  diploma_core.py              regras de notas + geração do PDF
+  editor_dados.py              edição de notas, campos e período de estágio
+  diploma_docx.py              geração do diploma em Word (DOCX) (NOVO)
+  DIPLOMA - PADRÃO.docx        modelo do diploma em Word (NOVO; fica junto do programa)
+  brasao.jpg, logo_escola.jpg  imagens do cabeçalho do diploma
+  FichaAvaliacao_completa.csv  a base de dados (copie para esta pasta)
+
+COMO USAR (com Python)
+  1) pip install reportlab lxml
+  2) python buscar_aluno_gui.py
+
+COMO GERAR O .EXE (no Windows)
+  Dê dois cliques em gerar_exe.bat (ele instala o que falta e gera dist\buscar_aluno_gui.exe).
+  Ou, manualmente:
+  pip install reportlab lxml pyinstaller
+  pyinstaller --onefile --noconsole --collect-all reportlab --collect-submodules lxml buscar_aluno_gui.py
+  O executável fica em dist\. Copie para a mesma pasta dele: o CSV,
+  brasao.jpg, logo_escola.jpg e DIPLOMA - PADRÃO.docx.
+
+EDITAR NOTAS E ESTÁGIOS (botão "Editar notas e estágios" ou duplo clique na linha)
+  Notas finais : teoria e estágio de cada componente do diploma (Enter confirma e desce,
+                 Tab vai para a próxima célula, Esc cancela, vazio apaga a nota).
+                 Aceita vírgula (8,5). Mostra como a nota sai impressa (1 casa decimal).
+  Estágios     : campo de estágio de cada disciplina (5 do quadro + 3 extras) e o
+                 período do estágio, com prévia de "No Período de ...".
+  Segurança    : antes de salvar é feita cópia do CSV na pasta backups\ (30 mais recentes);
+                 cada alteração é registrada em historico_alteracoes.csv; as linhas
+                 repetidas do aluno no CSV são mantidas e recebem a mesma alteração.
+  Atenção      : feche o CSV no Excel antes de salvar. As notas finais são editadas
+                 uma a uma; elas não são recalculadas a partir das notas I, II, III.
+
+DIPLOMA EM WORD (botão "Salvar DOCX...")
+  Gera frente e verso a partir do seu modelo "DIPLOMA - PADRÃO.docx": o programa abre o modelo
+  e troca SÓ o texto (nome, RG, filiação, naturalidade, estado, nascimento, ano letivo, notas,
+  campos de estágio e período). Fontes, caixas, imagens e posições ficam como no modelo.
+  - O modelo precisa ser o original (com o aluno de exemplo): o programa localiza os campos
+    pelo texto dele. Se você editar o modelo, mantenha esses trechos; senão ele avisa.
+  - Disciplinas extras de estágio (Pediatria, Saúde Mental, Saúde Coletiva) ganham uma linha a
+    mais na caixa "Campo de Estágios", que cresce o necessário.
+  - Os números de REGISTRO e "Cod. Aut" do aluno de exemplo são apagados (viram linhas em
+    branco), para nunca sair o registro de outra pessoa. Preencha à mão ou no Word.
+  - A quebra de página antes do verso é fixa, para o verso não mudar de lugar conforme o
+    tamanho dos nomes da frente.
+  - Algumas células de nota do modelo usam a fonte "CIDFont+F2" (resíduo de conversão de PDF) e
+    parecem diferentes das outras. Foram mantidas assim para preservar a altura das linhas.
+    Para uniformizar, mude UNIFORMIZAR_FONTE_NOTAS para True no início de diploma_docx.py.
+  - Para imprimir só o histórico, imprima a página 2 no Word.
+
+O QUE O PROGRAMA IMPRIME (PDF) (PDF, A4 paisagem)
+  Frente: diploma preenchido com nome, RG, filiação, naturalidade, nascimento e ano letivo.
+  Verso : histórico no modelo "DIPLOMA - PADRÃO" — componentes por módulo, notas finais de
+          teoria e estágio, cargas horárias, quadro "Campo de Estágios" e "No Período de".
+  Botões: imprimir diploma completo, imprimir só o histórico, visualizar PDF, salvar PDF.
+
+REGRAS USADAS
+  - Nota final = coluna base do CSV (ex.: ANATOMIA). Pode ser corrigida no editor.
+  - Notas com 1 casa decimal e vírgula. Nota não encontrada sai em branco no PDF
+    (o programa avisa antes de imprimir).
+  - Período do estágio vem do campo PERINT; data 00/00/00 sai em branco para preencher.
+  - O diploma padrão só vale para o curso Técnico em Enfermagem.
+
+AJUSTES (no início de diploma_core.py, lista CURRICULO e ESTAGIO_DIPLOMA)
+  Cada linha liga um componente do diploma à coluna do CSV. Duas ligações são suposições
+  e precisam de conferência:  Epidemiologia = ESTUDOS  |  Língua Portuguesa = HUMANIZACA
+  Também: "Introdução à Enf." (campo de estágio) = LOINT.
